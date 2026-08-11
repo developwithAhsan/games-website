@@ -1,0 +1,8 @@
+{
+  "name": "GTABrowser - Play GTA Games in Your Browser",
+  "description": "Play GTA Vice City and retro GTA games natively in your web browser powered by WebAssembly, with cloud save syncing, cheats, and game guides.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
