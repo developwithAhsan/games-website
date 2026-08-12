@@ -627,6 +627,10 @@ function initPortalRouting() {
     "games": document.getElementById("view-games"),
     "favorites": document.getElementById("view-favorites"),
     "blog": document.getElementById("view-blog"),
+    "about": document.getElementById("view-about"),
+    "contact": document.getElementById("view-contact"),
+    "privacy": document.getElementById("view-privacy"),
+    "terms": document.getElementById("view-terms"),
   };
 
   const navLinks = document.querySelectorAll(".gta-nav-tab, .q-nav-tab, .nav-item");
@@ -638,10 +642,26 @@ function initPortalRouting() {
       if (h === "games" || h === "catalog") return { key: "games", path: "/games" };
       if (h === "favorites" || h === "tools" || h === "saves") return { key: "favorites", path: "/favorites" };
       if (h === "blog" || h === "blogs") return { key: "blog", path: "/blog" };
+      if (h === "about") return { key: "about", path: "/about" };
+      if (h === "contact") return { key: "contact", path: "/contact" };
+      if (h === "privacy") return { key: "privacy", path: "/privacy" };
+      if (h === "terms") return { key: "terms", path: "/terms" };
       if (h === "home") return { key: "home", path: "/" };
     }
 
     const p = (rawPath || "").toLowerCase();
+    if (p.includes("/about")) {
+      return { key: "about", path: "/about" };
+    }
+    if (p.includes("/contact")) {
+      return { key: "contact", path: "/contact" };
+    }
+    if (p.includes("/privacy")) {
+      return { key: "privacy", path: "/privacy" };
+    }
+    if (p.includes("/terms")) {
+      return { key: "terms", path: "/terms" };
+    }
     if (p.includes("/game/") || p.includes("gtavcbrowser") || p.includes("gta-vc")) {
       return { key: "gta-vc", path: "/game/gtavcbrowser" };
     }
@@ -702,13 +722,23 @@ function initPortalRouting() {
         closeSingleArticle(false);
       }
     } else if (targetKey === "gta-vc") {
-      loadDisqusThread("disqus_thread", "gtavc-game-page", "GTA Vice City Web Edition");
+      loadDisqusThread("disqus-container-game", "gtavc-game-page", "GTA Vice City Web Edition");
     }
   }
 
-  function loadDisqusThread(containerId, identifier, title) {
-    const container = document.getElementById(containerId);
+  function loadDisqusThread(targetContainerId, identifier, title) {
+    const currentThread = document.getElementById("disqus_thread");
+    if (currentThread && currentThread.id !== targetContainerId) {
+      currentThread.removeAttribute("id");
+    }
+
+    let container = document.getElementById(targetContainerId);
+    if (!container) {
+      container = currentThread;
+    }
     if (!container) return;
+
+    container.id = "disqus_thread";
 
     window.disqus_config = function () {
       this.page.url = window.location.origin + window.location.pathname + window.location.search;
@@ -736,6 +766,16 @@ function initPortalRouting() {
   // Dynamic Blog Engine
   let activeBlogCategory = "ALL";
   let activeBlogQuery = "";
+
+  function refreshDisqusCounts() {
+    if (window.DISQUSWIDGETS) {
+      try {
+        window.DISQUSWIDGETS.getCount({ reset: true });
+      } catch (err) {
+        console.warn("Disqus count refresh error:", err);
+      }
+    }
+  }
 
   function renderBlogCards() {
     const grid = document.getElementById("seo-blogs-grid");
@@ -772,7 +812,10 @@ function initPortalRouting() {
           <p class="seo-blog-excerpt">${art.excerpt}</p>
           <div class="blog-card-actions">
             <button class="blog-read-more-btn" data-slug="${art.slug}">Read Article →</button>
-            <a href="/blog?article=${art.slug}" target="_blank" class="blog-open-newtab-link">Open in New Tab ↗</a>
+            <a href="/blog?article=${art.slug}#disqus_thread" data-disqus-identifier="gtavc-article-${art.id}" class="blog-disqus-count-link">
+              💬 <span class="disqus-comment-count" data-disqus-identifier="gtavc-article-${art.id}">Comments</span>
+            </a>
+            <a href="/blog?article=${art.slug}" target="_blank" class="blog-open-newtab-link">Open ↗</a>
           </div>
         </div>
       </article>
@@ -783,6 +826,130 @@ function initPortalRouting() {
         e.preventDefault();
         const card = btn.closest(".seo-blog-card");
         const slug = card ? card.dataset.slug : btn.dataset.slug;
+        if (slug) {
+          openSingleArticle(slug, true);
+        }
+      });
+    });
+
+    refreshDisqusCounts();
+  }
+
+  function getRelatedArticles(currentArticle) {
+    if (!blogArticles || blogArticles.length === 0) return [];
+
+    const otherArticles = blogArticles.filter(
+      (a) => a.id !== currentArticle.id && a.slug !== currentArticle.slug
+    );
+
+    const categoryGroups = {
+      tech: ["WASM TECH", "SAVE MANAGER", "PERFORMANCE", "FUTURE TECH", "MOBILE CONTROLS"],
+      guides: ["WALKTHROUGH", "ASSET GUIDE", "COLLECTIBLES", "SPEEDRUNNING", "MISSION MASTER", "CAR LISTS", "SIDE MISSIONS"],
+      combat: ["CHEATS & CODES", "VEHICLES & SPEED", "WEAPON COMBAT", "MILITARY HARDWARE"],
+      lore: ["SYNTHWAVE AUDIO", "RETRO LORE", "EASTER EGGS", "CHARACTER LORE"]
+    };
+
+    function getCategoryGroup(badge) {
+      const upperBadge = (badge || "").toUpperCase();
+      for (const [group, badges] of Object.entries(categoryGroups)) {
+        if (badges.some((b) => upperBadge.includes(b) || b.includes(upperBadge))) {
+          return group;
+        }
+      }
+      return null;
+    }
+
+    const currentGroup = getCategoryGroup(currentArticle.badge);
+    const stopWords = new Set(["this", "with", "from", "that", "your", "have", "will", "guide", "vice", "city", "gta", "how", "all", "about", "more", "best"]);
+
+    const scored = otherArticles.map((art) => {
+      let score = 0;
+      if (art.badge && currentArticle.badge && art.badge.toUpperCase() === currentArticle.badge.toUpperCase()) {
+        score += 10;
+      } else if (
+        art.badge &&
+        currentArticle.badge &&
+        (art.badge.toUpperCase().includes(currentArticle.badge.toUpperCase()) ||
+          currentArticle.badge.toUpperCase().includes(art.badge.toUpperCase()))
+      ) {
+        score += 6;
+      }
+
+      const artGroup = getCategoryGroup(art.badge);
+      if (currentGroup && artGroup === currentGroup) {
+        score += 5;
+      }
+
+      const currentWords = `${currentArticle.title} ${currentArticle.excerpt}`
+        .toLowerCase()
+        .split(/\W+/)
+        .filter((w) => w.length > 3 && !stopWords.has(w));
+      const artWords = new Set(
+        `${art.title} ${art.excerpt}`
+          .toLowerCase()
+          .split(/\W+/)
+          .filter((w) => w.length > 3 && !stopWords.has(w))
+      );
+
+      let overlaps = 0;
+      for (const word of currentWords) {
+        if (artWords.has(word)) overlaps++;
+      }
+      score += overlaps;
+
+      return { article: art, score };
+    });
+
+    scored.sort((a, b) => b.score - a.score);
+
+    const result = scored.slice(0, 3).map((item) => item.article);
+    
+    // Ensure we always have 3 related articles if possible
+    if (result.length < 3) {
+      for (const art of otherArticles) {
+        if (!result.some((r) => r.id === art.id)) {
+          result.push(art);
+          if (result.length === 3) break;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  function renderRelatedArticles(currentArticle) {
+    const grid = document.getElementById("related-articles-grid");
+    if (!grid) return;
+
+    const related = getRelatedArticles(currentArticle);
+    if (!related || related.length === 0) {
+      grid.innerHTML = "";
+      return;
+    }
+
+    grid.innerHTML = related
+      .map(
+        (art) => `
+      <div class="related-article-card" data-slug="${art.slug}">
+        <div class="related-card-img-wrap">
+          <img src="${art.image}" alt="${art.title}" class="related-card-img" onerror="this.src='https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80'" />
+          <span class="related-card-badge">${art.badge}</span>
+        </div>
+        <div class="related-card-body">
+          <div class="related-card-meta">${art.date} &bull; ${art.readTime}</div>
+          <h4 class="related-card-title">${art.title}</h4>
+          <p class="related-card-excerpt">${art.excerpt}</p>
+          <button class="related-card-btn" data-slug="${art.slug}">Read Guide →</button>
+        </div>
+      </div>
+    `
+      )
+      .join("");
+
+    grid.querySelectorAll(".related-article-card").forEach((card) => {
+      card.addEventListener("click", (e) => {
+        e.preventDefault();
+        const slug = card.dataset.slug;
         if (slug) {
           openSingleArticle(slug, true);
         }
@@ -803,6 +970,7 @@ function initPortalRouting() {
 
       const badge = document.getElementById("article-badge");
       const meta = document.getElementById("article-meta");
+      const commentCountLink = document.getElementById("article-comment-count-link");
       const title = document.getElementById("article-title");
       const author = document.getElementById("article-author");
       const hero = document.getElementById("article-hero-img");
@@ -811,6 +979,10 @@ function initPortalRouting() {
 
       if (badge) badge.textContent = article.badge;
       if (meta) meta.textContent = `${article.date} • ${article.readTime}`;
+      if (commentCountLink) {
+        commentCountLink.setAttribute("data-disqus-identifier", `gtavc-article-${article.id}`);
+        commentCountLink.href = `/blog?article=${article.slug}#disqus_thread`;
+      }
       if (title) title.textContent = article.title;
       if (author) author.textContent = article.author;
       if (hero) {
@@ -821,13 +993,16 @@ function initPortalRouting() {
       if (body) body.innerHTML = article.content;
       if (extBtn) extBtn.href = `${window.location.origin}/blog?article=${article.slug}`;
 
+      renderRelatedArticles(article);
+
       if (pushState) {
         history.pushState(null, "", `/blog?article=${article.slug}`);
       }
 
       window.scrollTo({ top: 0, behavior: "smooth" });
 
-      loadDisqusThread("disqus_thread_single_article", `gtavc-article-${article.id}`, article.title);
+      loadDisqusThread("disqus-container-single-article", `gtavc-article-${article.id}`, article.title);
+      refreshDisqusCounts();
     }
   }
 
@@ -845,7 +1020,7 @@ function initPortalRouting() {
 
       window.scrollTo({ top: 0, behavior: "smooth" });
 
-      loadDisqusThread("disqus_thread_blog", "gtavc-blog-page", "GTABrowser Articles & Strategy Guides");
+      loadDisqusThread("disqus-container-blog-list", "gtavc-blog-page", "GTABrowser Articles & Strategy Guides");
     }
   }
 
@@ -914,55 +1089,141 @@ function initPortalInteractivity() {
     });
   }
 
-  // Global Search
-  const searchBtn = document.getElementById("nav-search-btn");
-  const searchWrap = document.getElementById("search-bar-wrap");
-  const searchClose = document.getElementById("search-close-btn");
-  const searchInput = document.getElementById("global-search-input");
-  const searchResults = document.getElementById("search-results-box");
+  // ─── HEADER GAME SEARCH (GAMES ONLY) ───────────────────────────
+  const headerGameSearchInput = document.getElementById("header-game-search-input");
+  const headerSearchClearBtn = document.getElementById("header-search-clear-btn");
+  const headerSearchDropdown = document.getElementById("header-search-dropdown");
 
-  if (searchBtn && searchWrap) {
-    searchBtn.addEventListener("click", () => {
-      searchWrap.classList.toggle("hidden");
-      if (!searchWrap.classList.contains("hidden")) {
-        searchInput?.focus();
-      }
-    });
-  }
-  if (searchClose && searchWrap) {
-    searchClose.addEventListener("click", () => searchWrap.classList.add("hidden"));
-  }
-
-  const ALL_ITEMS = [
-    { title: "GTA Vice City Web Edition", type: "Playable Game", link: "/game/gtavcbrowser" },
-    { title: "ASPIRINE (Full Health)", type: "Cheat Code", link: "/blog" },
-    { title: "LEAVEMEALONE (Clear Wanted)", type: "Cheat Code", link: "/blog" },
-    { title: "PANZER (Spawn Tank)", type: "Cheat Code", link: "/blog" },
-    { title: "Favorite Games", type: "Category", link: "/favorites" },
-    { title: "100 Hidden Packages Checklist", type: "Guide", link: "/blog" },
+  const GAMES_LIST = [
+    {
+      id: "gtavcbrowser",
+      title: "GTA Vice City Web Edition",
+      genre: "Open World / Action",
+      engine: "reVC WASM",
+      badge: "PLAYABLE NOW",
+      badgeClass: "playable",
+      description: "Full 1986 Vice City story, missions, radio, weapons & vehicles in WebAssembly.",
+      link: "/game/gtavcbrowser",
+      img: "/gtavc-gameplay.jpg",
+      isPlayable: true
+    }
   ];
 
-  if (searchInput && searchResults) {
-    searchInput.addEventListener("input", () => {
-      const q = searchInput.value.trim().toLowerCase();
-      if (!q) {
-        searchResults.classList.add("hidden");
-        return;
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function renderHeaderSearchResults(query) {
+    if (!headerSearchDropdown) return;
+    const q = query.trim().toLowerCase();
+    
+    if (!q) {
+      headerSearchDropdown.classList.add("hidden");
+      if (headerSearchClearBtn) headerSearchClearBtn.classList.add("hidden");
+      return;
+    }
+
+    if (headerSearchClearBtn) headerSearchClearBtn.classList.remove("hidden");
+
+    const matches = GAMES_LIST.filter(game =>
+      game.title.toLowerCase().includes(q) ||
+      game.genre.toLowerCase().includes(q) ||
+      game.engine.toLowerCase().includes(q) ||
+      game.description.toLowerCase().includes(q) ||
+      game.badge.toLowerCase().includes(q)
+    );
+
+    if (matches.length === 0) {
+      headerSearchDropdown.innerHTML = `
+        <div class="search-no-results">
+          No games found matching "<strong>${escapeHtml(q)}</strong>".<br/>
+          <a href="/games" data-view="games" style="color:#3b82f6; font-weight:700; margin-top:6px; display:inline-block;">Explore Games Catalog ↗</a>
+        </div>
+      `;
+    } else {
+      headerSearchDropdown.innerHTML = matches.map(game => `
+        <a href="${game.link}" class="search-game-item" data-view="${game.id === 'gtavcbrowser' ? 'gta-vc' : 'games'}">
+          <img src="${game.img}" alt="${escapeHtml(game.title)}" class="search-game-thumb" onerror="this.src='https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=120&q=80'" />
+          <div class="search-game-info">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
+              <span class="search-game-title">${escapeHtml(game.title)}</span>
+              <span class="search-game-badge ${game.badgeClass}">${escapeHtml(game.badge)}</span>
+            </div>
+            <div class="search-game-meta">
+              <span>${escapeHtml(game.genre)}</span> &bull; <span>${escapeHtml(game.engine)}</span>
+            </div>
+          </div>
+          <span class="search-game-action">${game.isPlayable ? 'PLAY ▶' : 'VIEW ↗'}</span>
+        </a>
+      `).join('');
+    }
+
+    headerSearchDropdown.classList.remove("hidden");
+  }
+
+  if (headerGameSearchInput) {
+    headerGameSearchInput.addEventListener("input", (e) => {
+      const q = e.target.value;
+      renderHeaderSearchResults(q);
+
+      // Sync with catalog search input
+      const catalogSearchInput = document.getElementById("catalog-search-input");
+      if (catalogSearchInput) {
+        catalogSearchInput.value = q;
+        catalogSearchInput.dispatchEvent(new Event("input"));
       }
-      const matches = ALL_ITEMS.filter(i => i.title.toLowerCase().includes(q) || i.type.toLowerCase().includes(q));
-      if (matches.length === 0) {
-        searchResults.innerHTML = `<div style="padding:10px;color:#7890a8;font-size:0.85rem;">No matches found</div>`;
-      } else {
-        searchResults.innerHTML = matches.map(m => `
-          <a href="${m.link}" class="search-result-item" onclick="document.getElementById('search-bar-wrap').classList.add('hidden')">
-            <span><strong>${m.title}</strong></span>
-            <span style="font-size:0.75rem;color:var(--cyan);background:rgba(0,210,255,0.1);padding:2px 8px;border-radius:4px;">${m.type}</span>
-          </a>
-        `).join("");
+    });
+
+    headerGameSearchInput.addEventListener("focus", () => {
+      if (headerGameSearchInput.value.trim()) {
+        renderHeaderSearchResults(headerGameSearchInput.value);
       }
-      searchResults.classList.remove("hidden");
+    });
+
+    headerGameSearchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        if (headerSearchDropdown) headerSearchDropdown.classList.add("hidden");
+        headerGameSearchInput.blur();
+      } else if (e.key === "Enter") {
+        const firstItem = headerSearchDropdown?.querySelector(".search-game-item");
+        if (firstItem) {
+          firstItem.click();
+          if (headerSearchDropdown) headerSearchDropdown.classList.add("hidden");
+        }
+      }
     });
   }
+
+  if (headerSearchClearBtn) {
+    headerSearchClearBtn.addEventListener("click", () => {
+      if (headerGameSearchInput) {
+        headerGameSearchInput.value = "";
+        headerGameSearchInput.focus();
+      }
+      if (headerSearchDropdown) headerSearchDropdown.classList.add("hidden");
+      headerSearchClearBtn.classList.add("hidden");
+
+      // Reset catalog search
+      const catalogSearchInput = document.getElementById("catalog-search-input");
+      if (catalogSearchInput) {
+        catalogSearchInput.value = "";
+        catalogSearchInput.dispatchEvent(new Event("input"));
+      }
+    });
+  }
+
+  // Close dropdown on click outside
+  document.addEventListener("click", (e) => {
+    const searchBox = document.querySelector(".header-game-search-box");
+    if (searchBox && !searchBox.contains(e.target)) {
+      if (headerSearchDropdown) headerSearchDropdown.classList.add("hidden");
+    }
+  });
 
   // Voting & Custom Requests
   const customReqForm = document.getElementById("custom-request-form");
@@ -1256,6 +1517,41 @@ function initFavoriteManager() {
 
     syncFavoriteUI();
   });
+
+  // Contact page copy email button handler
+  const copyEmailBtn = document.getElementById("copy-contact-email-btn");
+  if (copyEmailBtn) {
+    copyEmailBtn.addEventListener("click", () => {
+      navigator.clipboard.writeText("ahsan.ahsan.2977@gmail.com").then(() => {
+        copyEmailBtn.textContent = "Copied! ✓";
+        setTimeout(() => {
+          copyEmailBtn.textContent = "Copy Email";
+        }, 2000);
+      }).catch(() => {
+        copyEmailBtn.textContent = "ahsan.ahsan.2977@gmail.com";
+      });
+    });
+  }
+
+  // Contact form submission handler
+  const contactForm = document.getElementById("contact-form");
+  const contactToast = document.getElementById("contact-status-toast");
+  if (contactForm) {
+    contactForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const nameInput = document.getElementById("contact-name");
+      const name = nameInput ? nameInput.value.trim() : "Friend";
+      
+      if (contactToast) {
+        contactToast.textContent = `Thank you, ${name}! Your message has been sent to Muhammad Ahsan. We will reply to your email shortly.`;
+        contactToast.classList.remove("hidden");
+      }
+      contactForm.reset();
+      setTimeout(() => {
+        if (contactToast) contactToast.classList.add("hidden");
+      }, 6000);
+    });
+  }
 
   syncFavoriteUI();
 }

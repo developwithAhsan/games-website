@@ -26,6 +26,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Syne:wght@600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 
+    <!-- DISQUS COMMENT COUNT SCRIPT -->
+    <script id="dsq-count-scr" src="//vice-city-online.disqus.com/count.js" async></script>
+
     <!-- CANONICAL -->
     <link rel="canonical" href="https://gtabrowser.vercel.app/" />
 
@@ -196,80 +199,6 @@
 
  
 </head>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    // Create floating button
-    const btn = document.createElement("button");
-    btn.innerHTML = "💬";
-    btn.style.cssText = `
-        position:fixed;
-        bottom:20px;
-        right:20px;
-        width:60px;
-        height:60px;
-        border:none;
-        border-radius:50%;
-        background:#5865F2;
-        color:#fff;
-        font-size:28px;
-        cursor:pointer;
-        box-shadow:0 5px 15px rgba(0,0,0,.3);
-        z-index:999999;
-    `;
-
-    // Create widget container
-    const box = document.createElement("div");
-    box.style.cssText = `
-        position:fixed;
-        bottom:90px;
-        right:20px;
-        width:350px;
-        height:500px;
-        display:none;
-        border-radius:12px;
-        overflow:hidden;
-        box-shadow:0 10px 30px rgba(0,0,0,.4);
-        z-index:999999;
-        background:#2b2d31;
-    `;
-
-    // Close button
-    const close = document.createElement("button");
-    close.innerHTML = "✕";
-    close.style.cssText = `
-        position:absolute;
-        top:5px;
-        right:5px;
-        width:28px;
-        height:28px;
-        border:none;
-        border-radius:50%;
-        background:red;
-        color:white;
-        cursor:pointer;
-        z-index:2;
-    `;
-
-    // Discord iframe
-    const iframe = document.createElement("iframe");
-    iframe.src = "https://discord.com/widget?id=1524742491486556260&theme=dark";
-    iframe.width = "350";
-    iframe.height = "500";
-    iframe.frameBorder = "0";
-    iframe.allowTransparency = "true";
-    iframe.sandbox = "allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts";
-    iframe.style.border = "0";
-
-    box.appendChild(close);
-    box.appendChild(iframe);
-
-    document.body.appendChild(btn);
-    document.body.appendChild(box);
-
-    btn.onclick = () => box.style.display = "block";
-    close.onclick = () => box.style.display = "none";
-});
-</script>
   <body
     class="app-body"
     data-is-touch="0"
@@ -389,12 +318,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
       <!-- GTABROWSER NAVIGATION BAR -->
       <nav class="quenq-navbar" id="app-navbar">
-        <div class="quenq-nav-inner" id="nav-links">
-          <a href="/" class="q-nav-tab active" data-view="home">Home</a>
-          <a href="/game/gtavcbrowser" class="q-nav-tab q-nav-highlight" data-view="gta-vc">Play GTA Vice City</a>
-          <a href="/games" class="q-nav-tab" data-view="games">Games Catalog</a>
-          <a href="/favorites" class="q-nav-tab" data-view="favorites">Favorite Games</a>
-          <a href="/blog" class="q-nav-tab" data-view="blog">Blogs</a>
+        <div class="quenq-nav-inner">
+          <div class="nav-links-wrap" id="nav-links">
+            <a href="/" class="q-nav-tab active" data-view="home">Home</a>
+            <a href="/game/gtavcbrowser" class="q-nav-tab q-nav-highlight" data-view="gta-vc">Play GTA Vice City</a>
+            <a href="/games" class="q-nav-tab" data-view="games">Games Catalog</a>
+            <a href="/favorites" class="q-nav-tab" data-view="favorites">Favorite Games</a>
+            <a href="/blog" class="q-nav-tab" data-view="blog">Blogs</a>
+            <a href="/about" class="q-nav-tab" data-view="about">About Us</a>
+            <a href="/contact" class="q-nav-tab" data-view="contact">Contact Us</a>
+          </div>
+
+          <!-- Header Games Search Bar (Games Only) -->
+          <div class="header-game-search-box">
+            <div class="h-search-input-wrap">
+              <svg viewBox="0 0 24 24" class="h-search-icon" width="16" height="16" fill="currentColor">
+                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+              </svg>
+              <input type="text" id="header-game-search-input" placeholder="Search games..." aria-label="Search games only" autocomplete="off" />
+              <button id="header-search-clear-btn" class="h-search-clear-btn hidden" type="button" aria-label="Clear search">✕</button>
+            </div>
+            <!-- Header Search Dropdown (Games Only) -->
+            <div id="header-search-dropdown" class="header-search-dropdown hidden" role="listbox"></div>
+          </div>
         </div>
       </nav>
 
@@ -423,7 +369,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                   </button>
                   <div class="q-hero-media">
-                    <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80" alt="GTA Vice City Web Edition" class="q-hero-img" onerror="this.src='https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=80'" />
+                    <img src="/gtavc-gameplay.jpg" alt="GTA Vice City Web Gameplay" class="q-hero-img" onerror="this.src='/gtavc-screenshot.jpg'" />
                     <div class="q-hero-text-overlay">
                       <span class="q-badge-playable">PLAYABLE NOW</span>
                       <h3>GTA Vice City — Web Edition</h3>
@@ -445,7 +391,7 @@ document.addEventListener('DOMContentLoaded', function () {
               <div class="q-window-body">
                 <div class="q-article-card">
                   <div class="q-article-media">
-                    <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=80" alt="GTA Vice City Guides" onerror="this.src='https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80'" />
+                    <img src="https://upload.wikimedia.org/wikipedia/en/c/ce/Vice-city-cover.jpg" alt="Tommy Vercetti - GTA Vice City Guides" onerror="this.src='https://upload.wikimedia.org/wikipedia/pt/2/23/Tommy_Vercetti_concept_art.png'" />
                     <div class="q-article-overlay">
                       <span class="q-article-date">GTA Vice City Strategy Guide</span>
                       <h3>Complete Story Walkthrough &amp; Mission Map</h3>
@@ -577,19 +523,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
               <section class="vc-section">
                 <h2 class="vc-section-title">Guides &amp; Articles</h2>
-                <p>Looking for help? Our guides cover everything — cheat codes, mission walkthroughs, hidden packages, best cars and more.</p>
+                <p>Looking for help? Our guides cover everything — cheat codes, mission walkthroughs, best cars and more.</p>
                 <ul>
                   <li><a href="/blog">All GTA Vice City Cheat Codes (PC &amp; Browser)</a></li>
                   <li><a href="/blog">20 Tips Every Beginner Needs to Know</a></li>
                   <li><a href="/blog">All Story Missions Listed in Order</a></li>
-                  <li><a href="/blog">Hidden Packages: All 100 Locations</a></li>
                 </ul>
               </section>
 
               <!-- Player Comments & Community Discussion via Disqus -->
               <section class="vc-section vc-discussion-section">
                 <h2 class="vc-section-title">Community Discussion &amp; Player Comments</h2>
-                <div id="disqus_thread"></div>
+                <div id="disqus-container-game"></div>
               </section>
 
             </div>
@@ -616,8 +561,8 @@ document.addEventListener('DOMContentLoaded', function () {
       <section id="view-games" class="app-view hidden">
         <div class="portal-container">
           <div class="catalog-header">
-            <h1>Games Catalog &amp; WebAssembly Ports</h1>
-            <p>Browse active playable browser games.</p>
+            <h1>Game Catalog</h1>
+            <p>Explore playable WebAssembly browser games.</p>
           </div>
 
           <!-- Catalog Filter Bar -->
@@ -626,8 +571,6 @@ document.addEventListener('DOMContentLoaded', function () {
               <button class="chip active" data-filter="all">All Games</button>
               <button class="chip" data-filter="playable">Playable Now</button>
               <button class="chip" data-filter="open-world">Open World</button>
-              <button class="chip" data-filter="racing">Racing</button>
-              <button class="chip" data-filter="action">Action</button>
             </div>
 
             <div class="search-filter-input-wrap">
@@ -644,7 +587,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <button class="fav-heart-btn" data-game-id="gtavcbrowser" title="Add to Favorites" aria-label="Favorite Game">
                   <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                 </button>
-                <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80" alt="GTA Vice City Web" class="cat-thumb-img" onerror="this.src='https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80'" />
+                <img src="/gtavc-gameplay.jpg" alt="GTA Vice City Web Gameplay" class="cat-thumb-img" onerror="this.src='/gtavc-screenshot.jpg'" />
               </div>
               <div class="cat-content">
                 <span class="cat-genre">Open World / Action</span>
@@ -676,7 +619,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <button class="fav-heart-btn is-favorited" data-game-id="gtavcbrowser" title="Remove from Favorites" aria-label="Favorite Game">
                   <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                 </button>
-                <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80" alt="GTA Vice City Web" class="cat-thumb-img" onerror="this.src='https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80'" />
+                <img src="https://upload.wikimedia.org/wikipedia/pt/2/23/Tommy_Vercetti_concept_art.png" alt="Tommy Vercetti - GTA Vice City Web" class="cat-thumb-img" onerror="this.src='https://upload.wikimedia.org/wikipedia/en/c/ce/Vice-city-cover.jpg'" />
               </div>
               <div class="cat-content">
                 <span class="cat-genre">Open World / Action</span>
@@ -708,11 +651,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
           <!-- BLOG LISTING INDEX VIEW -->
           <div id="blog-index-view">
-            <div class="blog-header">
-              <h1>GTABrowser Articles, Strategy Guides &amp; Tech Blog</h1>
-              <p>In-depth technical analysis, 100% completion guides, vehicle stats, and master cheat codes for GTA Vice City Web Edition.</p>
-            </div>
-
             <!-- Blog Search & Category Filters -->
             <div class="blog-filter-bar">
               <div class="blog-search-box">
@@ -786,25 +724,13 @@ document.addEventListener('DOMContentLoaded', function () {
               </div>
             </div>
 
-            <!-- Hidden Packages Checklist Tool -->
-            <div class="packages-tracker-box" style="margin-top: 40px;">
-              <h2>Hidden Packages Collector Checklist (100 Packages)</h2>
-              <p>Track your package collection progress across Vice City. Saved automatically in your browser.</p>
-              <div class="tracker-progress-row">
-                <div class="tp-bar-wrap"><div id="pkg-bar-fill" class="tp-bar-fill" style="width: 0%;"></div></div>
-                <span id="pkg-count-text">0 / 100 collected</span>
-                <button id="pkg-reset-btn" class="pkg-reset-btn">Reset Checklist</button>
-              </div>
-              <div class="packages-checkboxes-grid" id="packages-checkboxes-grid">
-                <!-- Dynamically populated 1 to 100 -->
-              </div>
-            </div>
+
 
             <!-- Blog Comments via Disqus -->
             <div class="vc-section" style="margin-top: 48px;">
               <h2 class="vc-section-title">GTABrowser Community Discussion</h2>
               <p>Join the conversation! Leave your strategy questions, tips, and feedback below powered by Disqus.</p>
-              <div id="disqus_thread_blog"></div>
+              <div id="disqus-container-blog-list"></div>
             </div>
           </div>
 
@@ -816,9 +742,12 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
 
             <div class="blog-single-header">
-              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap;">
                 <span id="article-badge" class="seo-blog-badge" style="position: static;">TECH</span>
                 <span id="article-meta" style="color: #64748b; font-size: 0.85rem;">August 11, 2026 &bull; 10 min read</span>
+                <span style="color: #00f2fe; font-size: 0.85rem; font-weight: 600;">
+                  💬 <a id="article-comment-count-link" href="#disqus_thread" data-disqus-identifier="" style="color: #00f2fe; text-decoration: none;">0 Comments</a>
+                </span>
               </div>
               <h1 id="article-title" class="blog-single-title">Article Title</h1>
               <div style="color: #94a3b8; font-size: 0.92rem; font-weight: 600;">
@@ -835,15 +764,400 @@ document.addEventListener('DOMContentLoaded', function () {
               <!-- Dynamically rendered detailed content -->
             </div>
 
+            <!-- Related Articles Section -->
+            <div id="related-articles-section" class="related-articles-section">
+              <h3 class="related-articles-header">
+                <span style="color: #38bdf8;">📖</span> Related Strategy Guides &amp; Articles
+              </h3>
+              <div id="related-articles-grid" class="related-articles-grid">
+                <!-- Dynamically rendered 3 related article cards -->
+              </div>
+            </div>
+
             <!-- Article Comments Section -->
             <div class="blog-comments-section">
               <h2 class="blog-comments-title">
                 <span>💬</span> Article Comments &amp; Discussion
               </h2>
-              <div id="disqus_thread_single_article"></div>
+              <div id="disqus-container-single-article"></div>
             </div>
           </div>
 
+        </div>
+      </section>
+
+      <!-- VIEW 6: ABOUT US -->
+      <section id="view-about" class="app-view hidden">
+        <div class="quenq-layout">
+          <div class="quenq-main-col" style="grid-column: 1 / -1; max-width: 1000px; margin: 0 auto; width: 100%;">
+            
+            <!-- Header Banner -->
+            <div class="q-window-card">
+              <div class="q-window-header">
+                <h2 class="q-window-title">About GTABrowser &amp; Founder</h2>
+              </div>
+              <div class="q-window-body">
+                <div class="about-hero-grid">
+                  <div class="about-avatar-wrap">
+                    <div class="about-avatar-inner">
+                      <span class="about-avatar-initials">MA</span>
+                    </div>
+                    <span class="about-badge-flag">🇵🇰 Pakistan</span>
+                  </div>
+                  <div class="about-hero-info">
+                    <span class="q-badge-playable" style="margin-bottom: 8px; display: inline-block;">FOUNDER &amp; DEVELOPER</span>
+                    <h1 class="about-founder-name">Muhammad Ahsan</h1>
+                    <p class="about-founder-title">Student &amp; Self-Taught Web Developer from Pakistan</p>
+                    <div class="about-meta-pills">
+                      <span class="about-pill">🎓 Student</span>
+                      <span class="about-pill">💻 WebAssembly Explorer</span>
+                      <span class="about-pill">🎮 Retro Gaming Enthusiast</span>
+                      <span class="about-pill">✉️ ahsan.ahsan.2977@gmail.com</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Founder Story Card -->
+            <div class="q-window-card">
+              <div class="q-window-header">
+                <h3 class="q-window-title">Meet Muhammad Ahsan — My Story</h3>
+              </div>
+              <div class="q-window-body text-content-body">
+                <p class="q-lead-text">
+                  Hello! My name is <strong>Muhammad Ahsan</strong>, a student and passionate developer living in Pakistan 🇵🇰. I am self-driven, deeply curious about technology, and currently on an exciting journey learning modern software development and web architecture.
+                </p>
+                <p>
+                  My love for computer programming began with a simple question: <em>"How can we make complex 3D video games accessible to anyone in the world without requiring expensive hardware or installation files?"</em> As a big fan of classic open-world games like <strong>Grand Theft Auto: Vice City</strong> and <strong>GTA III</strong>, I wanted to combine retro gaming nostalgia with the modern magic of browser technologies.
+                </p>
+                <p>
+                  That spark inspired the creation of <strong>GTABrowser</strong> — a dedicated web application designed to showcase high-performance C++ WebAssembly (WASM) reverse-engineered engine ports directly in the browser.
+                </p>
+              </div>
+            </div>
+
+            <!-- Mission & Vision -->
+            <div class="about-cards-grid">
+              <div class="q-window-card">
+                <div class="q-window-header">
+                  <h3 class="q-window-title">🚀 Our Mission</h3>
+                </div>
+                <div class="q-window-body">
+                  <p>
+                    To democratize access to classic 3D games through modern web technology, preserving digital gaming heritage and making open-world experiences playable anywhere with zero friction.
+                  </p>
+                </div>
+              </div>
+
+              <div class="q-window-card">
+                <div class="q-window-header">
+                  <h3 class="q-window-title">⚡ How It Works</h3>
+                </div>
+                <div class="q-window-body">
+                  <p>
+                    Using <strong>reVC / re3 C++ engines compiled to WebAssembly</strong>, WebGL 2.0 rendering, and browser OPFS local file storage, GTABrowser runs full 3D game engines natively at 60 FPS inside standard web browsers.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tech Stack & Values -->
+            <div class="q-window-card">
+              <div class="q-window-header">
+                <h3 class="q-window-title">🛠️ Technology &amp; Philosophy</h3>
+              </div>
+              <div class="q-window-body">
+                <ul class="about-feature-list">
+                  <li><strong>Zero Installation:</strong> Play instantly in Google Chrome, Firefox, Safari, or Microsoft Edge.</li>
+                  <li><strong>Private Local Save States:</strong> Your game progress is saved safely inside your device's local Origin Private File System (OPFS).</li>
+                  <li><strong>Responsive Experience:</strong> Mobile touch virtual gamepad emulation and desktop keyboard/gamepad controller support.</li>
+                  <li><strong>Community First:</strong> Free, open, student-led project built with genuine care for web performance and user experience.</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Connect & Social Card -->
+            <div class="q-window-card">
+              <div class="q-window-header">
+                <h3 class="q-window-title">🌐 Connect with Muhammad Ahsan</h3>
+              </div>
+              <div class="q-window-body">
+                <p style="margin-bottom: 16px;">
+                  I am always eager to connect with fellow learners, developers, gamers, and technology enthusiasts from around the world. Feel free to reach out via email or connect on social media!
+                </p>
+                <div class="about-social-buttons">
+                  <a href="mailto:ahsan.ahsan.2977@gmail.com" class="about-social-btn email">
+                    📧 ahsan.ahsan.2977@gmail.com
+                  </a>
+                  <a href="https://github.com/developwithahsan" target="_blank" rel="noopener noreferrer" class="about-social-btn">
+                    💻 GitHub
+                  </a>
+                  <a href="https://x.com/Ahsan29772977" target="_blank" rel="noopener noreferrer" class="about-social-btn">
+                    🐦 X / Twitter
+                  </a>
+                  <a href="https://www.instagram.com/ahsan0world" target="_blank" rel="noopener noreferrer" class="about-social-btn">
+                    📸 Instagram
+                  </a>
+                  <a href="https://www.linkedin.com/in/devwithahsan/" target="_blank" rel="noopener noreferrer" class="about-social-btn">
+                    💼 LinkedIn
+                  </a>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 7: CONTACT US -->
+      <section id="view-contact" class="app-view hidden">
+        <div class="quenq-layout">
+          <div class="quenq-main-col" style="grid-column: 1 / -1; max-width: 1000px; margin: 0 auto; width: 100%;">
+            
+            <!-- Contact Header -->
+            <div class="q-window-card">
+              <div class="q-window-header">
+                <h2 class="q-window-title">Contact Us &amp; Support</h2>
+              </div>
+              <div class="q-window-body">
+                <p class="q-lead-text">
+                  Have a question, feedback, bug report, or game request? We'd love to hear from you! Reach out directly to founder <strong>Muhammad Ahsan</strong> or submit a message below.
+                </p>
+                
+                <div class="contact-cards-grid">
+                  <div class="contact-info-card">
+                    <div class="contact-info-icon">📧</div>
+                    <div class="contact-info-text">
+                      <h4>Direct Email</h4>
+                      <a href="mailto:ahsan.ahsan.2977@gmail.com" class="contact-email-link">ahsan.ahsan.2977@gmail.com</a>
+                      <button id="copy-contact-email-btn" class="contact-copy-btn" type="button">Copy Email</button>
+                    </div>
+                  </div>
+
+                  <div class="contact-info-card">
+                    <div class="contact-info-icon">💬</div>
+                    <div class="contact-info-text">
+                      <h4>Discord Community</h4>
+                      <p>Join our active gaming &amp; tech community.</p>
+                      <a href="https://discord.gg/" target="_blank" rel="noopener noreferrer" class="contact-link-btn">Join Discord Server ↗</a>
+                    </div>
+                  </div>
+
+                  <div class="contact-info-card">
+                    <div class="contact-info-icon">👤</div>
+                    <div class="contact-info-text">
+                      <h4>Founder / Developer</h4>
+                      <p><strong>Muhammad Ahsan</strong> (Pakistan 🇵🇰)</p>
+                      <p style="font-size:0.8rem; color:#94a3b8;">Student &amp; Developer</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Contact Form -->
+            <div class="q-window-card">
+              <div class="q-window-header">
+                <h3 class="q-window-title">Send Us a Direct Message</h3>
+              </div>
+              <div class="q-window-body">
+                <form id="contact-form" class="contact-form-layout">
+                  <div class="contact-form-row">
+                    <div class="contact-form-group">
+                      <label for="contact-name">Your Full Name <span class="req">*</span></label>
+                      <input type="text" id="contact-name" placeholder="e.g. Alex Mercer" required />
+                    </div>
+                    <div class="contact-form-group">
+                      <label for="contact-email">Your Email Address <span class="req">*</span></label>
+                      <input type="email" id="contact-email" placeholder="e.g. alex@example.com" required />
+                    </div>
+                  </div>
+
+                  <div class="contact-form-group">
+                    <label for="contact-subject">Inquiry Subject <span class="req">*</span></label>
+                    <select id="contact-subject" required>
+                      <option value="General Inquiry">General Inquiry / Feedback</option>
+                      <option value="Bug Report">Bug Report / Technical Issue</option>
+                      <option value="Game Request">Game Request / WASM Port</option>
+                      <option value="Collaboration">Collaboration / Business</option>
+                    </select>
+                  </div>
+
+                  <div class="contact-form-group">
+                    <label for="contact-message">Your Message <span class="req">*</span></label>
+                    <textarea id="contact-message" rows="5" placeholder="Write your message or inquiry here..." required></textarea>
+                  </div>
+
+                  <div class="contact-form-footer">
+                    <button type="submit" id="contact-submit-btn" class="cat-play-btn" style="padding: 10px 24px;">
+                      Send Message 🚀
+                    </button>
+                    <div id="contact-status-toast" class="contact-toast hidden"></div>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- Contact FAQ -->
+            <div class="q-window-card">
+              <div class="q-window-header">
+                <h3 class="q-window-title">Frequently Asked Questions</h3>
+              </div>
+              <div class="q-window-body">
+                <div class="contact-faq-list">
+                  <details class="contact-faq-item">
+                    <summary>How do I save my game progress in GTABrowser?</summary>
+                    <p>Your game save files are saved automatically in your browser's local storage (OPFS / IndexedDB). You can also use our built-in Save Manager tool to export backup `.sav` files to your computer or import existing save files!</p>
+                  </details>
+                  <details class="contact-faq-item">
+                    <summary>Is GTABrowser completely free?</summary>
+                    <p>Yes, GTABrowser is 100% free and open for public performance testing and gaming nostalgia. No payment or subscription is ever required.</p>
+                  </details>
+                  <details class="contact-faq-item">
+                    <summary>How can I report a bug or request a new game?</summary>
+                    <p>You can use the contact form above or email Muhammad Ahsan directly at <strong>ahsan.ahsan.2977@gmail.com</strong>. We review all feedback regularly!</p>
+                  </details>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 8: PRIVACY POLICY -->
+      <section id="view-privacy" class="app-view hidden">
+        <div class="quenq-layout">
+          <div class="quenq-main-col" style="grid-column: 1 / -1; max-width: 1000px; margin: 0 auto; width: 100%;">
+            
+            <div class="q-window-card">
+              <div class="q-window-header">
+                <h2 class="q-window-title">Privacy Policy</h2>
+              </div>
+              <div class="q-window-body text-content-body">
+                <p class="q-lead-text">
+                  <strong>Effective Date:</strong> August 11, 2026<br/>
+                  <strong>Developer &amp; Operator:</strong> Muhammad Ahsan (GTABrowser)<br/>
+                  <strong>Contact Email:</strong> <a href="mailto:ahsan.ahsan.2977@gmail.com">ahsan.ahsan.2977@gmail.com</a>
+                </p>
+
+                <hr class="legal-divider" />
+
+                <h3>1. Introduction</h3>
+                <p>
+                  Welcome to GTABrowser ("we", "our", or "us"). GTABrowser is an independent WebAssembly gaming application created and maintained by <strong>Muhammad Ahsan</strong>, a student and developer from Pakistan. We respect your privacy and are committed to protecting your personal data.
+                </p>
+
+                <h3>2. Information We Collect</h3>
+                <p>
+                  <strong>A. No Account Registration Required:</strong> GTABrowser operates without forcing users to create an account or provide personal identifiers (such as passwords, credit card information, or phone numbers).
+                </p>
+                <p>
+                  <strong>B. Local Save Data &amp; Preferences:</strong> All game save files, audio preferences, keyboard mappings, and favorite games are stored strictly on your local device using browser technologies such as standard <code>localStorage</code> and the Origin Private File System (OPFS). This data remains on your physical device and is never uploaded to external servers.
+                </p>
+                <p>
+                  <strong>C. Server Technical Logs:</strong> Like most web portals, our hosting infrastructure may automatically process standard non-identifying technical log data, such as your IP address, browser type, operating system version, and request timestamps, purely for system security, DDoS prevention, and performance monitoring.
+                </p>
+
+                <h3>3. Cookies and Third-Party Services</h3>
+                <p>
+                  GTABrowser does not use invasive tracking cookies. However, third-party embedded features may utilize cookies or browser storage:
+                </p>
+                <ul>
+                  <li><strong>Disqus Comment System:</strong> If you choose to comment on strategy guides or game articles, Disqus may process cookies or login tokens according to Disqus's Privacy Policy.</li>
+                  <li><strong>Content Delivery Networks (CDNs):</strong> Game assets, textures, and WebAssembly scripts are loaded via secure global CDN nodes to optimize loading speed.</li>
+                </ul>
+
+                <h3>4. Data Security &amp; Storage Control</h3>
+                <p>
+                  Because your game progress is stored locally in your browser, you retain full control over your data. You can inspect, export, or permanently delete your save files at any time using the in-game Save Manager tool or by clearing your browser cache and site storage.
+                </p>
+
+                <h3>5. Children's Privacy</h3>
+                <p>
+                  GTABrowser does not knowingly collect or solicit personal information from children under the age of 13. If you believe a child has provided us with personal information, please contact us at <strong>ahsan.ahsan.2977@gmail.com</strong> so we can promptly address the situation.
+                </p>
+
+                <h3>6. Changes to This Privacy Policy</h3>
+                <p>
+                  We may update our Privacy Policy periodically to reflect technological enhancements or legal requirements. Updated policies will be posted on this page with an updated effective date.
+                </p>
+
+                <h3>7. Contact Us</h3>
+                <p>
+                  If you have any questions or concerns regarding this Privacy Policy, please contact developer Muhammad Ahsan at:<br/>
+                  📧 <strong>Email:</strong> <a href="mailto:ahsan.ahsan.2977@gmail.com">ahsan.ahsan.2977@gmail.com</a>
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 9: TERMS OF SERVICE -->
+      <section id="view-terms" class="app-view hidden">
+        <div class="quenq-layout">
+          <div class="quenq-main-col" style="grid-column: 1 / -1; max-width: 1000px; margin: 0 auto; width: 100%;">
+            
+            <div class="q-window-card">
+              <div class="q-window-header">
+                <h2 class="q-window-title">Terms of Service</h2>
+              </div>
+              <div class="q-window-body text-content-body">
+                <p class="q-lead-text">
+                  <strong>Effective Date:</strong> August 11, 2026<br/>
+                  <strong>Project Name:</strong> GTABrowser<br/>
+                  <strong>Developer:</strong> Muhammad Ahsan<br/>
+                  <strong>Contact Email:</strong> <a href="mailto:ahsan.ahsan.2977@gmail.com">ahsan.ahsan.2977@gmail.com</a>
+                </p>
+
+                <hr class="legal-divider" />
+
+                <h3>1. Acceptance of Terms</h3>
+                <p>
+                  By accessing or using the GTABrowser website, you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, please do not use our website.
+                </p>
+
+                <h3>2. Trademark &amp; Intellectual Property Disclaimer</h3>
+                <p>
+                  <strong>GTABrowser is an independent fan-made community project and WebAssembly performance showcase.</strong>
+                </p>
+                <p>
+                  Grand Theft Auto, GTA Vice City, GTA III, GTA San Andreas, and all associated logos, character names, audio tracks, and trademarks are the registered intellectual property of <strong>Rockstar Games</strong> and <strong>Take-Two Interactive Software, Inc.</strong>
+                </p>
+                <p>
+                  GTABrowser is not affiliated with, endorsed, sponsored, or certified by Rockstar Games or Take-Two Interactive. WebAssembly C++ runtime implementations (reVC / re3) are educational reverse-engineering engines developed by open-source computer science research communities for hardware testing and web browser portability.
+                </p>
+
+                <h3>3. Permitted Personal Use</h3>
+                <p>
+                  You are granted a limited, revocable, non-exclusive, non-transferable license to access and play WebAssembly games hosted on GTABrowser strictly for non-commercial, personal entertainment and educational performance testing.
+                </p>
+
+                <h3>4. Prohibited Conduct</h3>
+                <p>You agree not to:</p>
+                <ul>
+                  <li>Attempt to perform automated scraping, denial-of-service (DDoS) attacks, or malicious payloads against GTABrowser servers.</li>
+                  <li>Post spam, offensive material, or illegal links in the Disqus public discussion section.</li>
+                  <li>Misrepresent GTABrowser as an official Rockstar Games product or charge third parties for access to this free portal.</li>
+                </ul>
+
+                <h3>5. Limitation of Liability &amp; Disclaimer of Warranties</h3>
+                <p>
+                  GTABrowser IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED. MUHAMMAD AHSAN AND GTABROWSER DO NOT GUARANTEE UNINTERRUPTED AVAILABILITY, HARDWARE COMPATIBILITY, OR FREEDOM FROM BROWSER SAVE CORRUPTION. IN NO EVENT SHALL MUHAMMAD AHSAN BE LIABLE FOR ANY INDIRECT OR INCIDENTAL DAMAGES ARISING FROM YOUR USE OF THIS APPLICATION.
+                </p>
+
+                <h3>6. Contact &amp; Inquiries</h3>
+                <p>
+                  For any legal or technical inquiries regarding these Terms of Service, please contact project creator Muhammad Ahsan at:<br/>
+                  📧 <strong>Email:</strong> <a href="mailto:ahsan.ahsan.2977@gmail.com">ahsan.ahsan.2977@gmail.com</a>
+                </p>
+              </div>
+            </div>
+
+          </div>
         </div>
       </section>
 
@@ -882,6 +1196,9 @@ document.addEventListener('DOMContentLoaded', function () {
                   <a href="https://github.com/developwithahsan" target="_blank" rel="noopener noreferrer" aria-label="GitHub" class="pro-social-icon">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 .5C5.73.5.75 5.48.75 11.75c0 4.9 3.18 9.06 7.6 10.53.55.1.75-.24.75-.53 0-.26-.01-1.13-.02-2.06-3.09.67-3.74-1.32-3.74-1.32-.5-1.28-1.23-1.62-1.23-1.62-1-.69.08-.67.08-.67 1.1.08 1.68 1.14 1.68 1.14.98 1.68 2.58 1.19 3.2.91.1-.71.39-1.19.71-1.46-2.47-.28-5.06-1.23-5.06-5.5 0-1.22.44-2.21 1.15-2.99-.12-.28-.5-1.42.11-2.96 0 0 .94-.3 3.08 1.14a10.7 10.7 0 0 1 5.6 0c2.14-1.44 3.08-1.14 3.08-1.14.61 1.54.23 2.68.11 2.96.72.78 1.15 1.77 1.15 2.99 0 4.28-2.6 5.22-5.08 5.5.4.35.75 1.03.75 2.08 0 1.5-.01 2.71-.01 3.08 0 .29.2.64.76.53a10.75 10.75 0 0 0 7.6-10.53C23.25 5.48 18.27.5 12 .5Z"/></svg>
                   </a>
+                  <a href="https://discord.gg/" target="_blank" rel="noopener noreferrer" aria-label="Discord Server" title="Discord Community" class="pro-social-icon">
+                    <svg viewBox="0 0 127.14 96.36" width="18" height="14" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,45.88,53.89,53C53.89,60,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,45.88,96.12,53C96.12,60,91.08,65.69,84.69,65.69Z"/></svg>
+                  </a>
                   <a href="https://x.com/Ahsan29772977" target="_blank" rel="noopener noreferrer" aria-label="X / Twitter" class="pro-social-icon">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18.24 2h3.06l-6.69 7.65L22.94 22h-6.9l-5.4-7.06L4.5 22H1.44l7.16-8.19L1.06 2h7.07l4.87 6.44L18.24 2Zm-2.4 18h1.7L8.24 3.9h-1.8L15.84 20Z"/></svg>
                   </a>
@@ -891,7 +1208,7 @@ document.addEventListener('DOMContentLoaded', function () {
                   <a href="https://www.linkedin.com/in/devwithahsan/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="pro-social-icon">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.03-1.85-3.03-1.85 0-2.14 1.44-2.14 2.94v5.66H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29ZM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12ZM7.11 20.45H3.56V9h3.55v11.45ZM22.22 0H1.77C.8 0 0 .78 0 1.75v20.5C0 23.22.8 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.75V1.75C24 .78 23.2 0 22.22 0Z"/></svg>
                   </a>
-                  <a href="mailto:editingking.2977@gmail.com" aria-label="Email" class="pro-social-icon">
+                  <a href="mailto:ahsan.ahsan.2977@gmail.com" aria-label="Email Muhammad Ahsan" title="Email: ahsan.ahsan.2977@gmail.com" class="pro-social-icon">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M2 4h20c.55 0 1 .45 1 1v14c0 .55-.45 1-1 1H2c-.55 0-1-.45-1-1V5c0-.55.45-1 1-1Zm1.4 2 8.6 6.44L20.6 6H3.4Zm17.6 1.6-8.35 6.26a1 1 0 0 1-1.2 0L3.1 7.6V17.6h17.9V7.6Z"/></svg>
                   </a>
                 </div>
@@ -906,6 +1223,9 @@ document.addEventListener('DOMContentLoaded', function () {
                   <li><a href="/games">Games Catalog</a></li>
                   <li><a href="/favorites">Favorite Games</a></li>
                   <li><a href="/blog">Blogs &amp; Guides</a></li>
+                  <li><a href="/about">About Us</a></li>
+                  <li><a href="/contact">Contact Us</a></li>
+                  <li><a href="https://discord.gg/" target="_blank" rel="noopener noreferrer">Discord Server</a></li>
                 </ul>
               </div>
 
@@ -923,8 +1243,10 @@ document.addEventListener('DOMContentLoaded', function () {
               <div class="pro-footer-col">
                 <h4 class="pro-col-title">Legal &amp; Info</h4>
                 <ul class="pro-footer-links">
-                  <li><a href="/privacy.html">Privacy Policy</a></li>
-                  <li><a href="/terms.html">Terms of Service</a></li>
+                  <li><a href="/privacy">Privacy Policy</a></li>
+                  <li><a href="/terms">Terms of Service</a></li>
+                  <li><a href="/about">About Developer</a></li>
+                  <li><a href="/contact">Contact Support</a></li>
                   <li><a href="/blog">Guides &amp; Articles</a></li>
                 </ul>
               </div>
@@ -940,88 +1262,58 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
           </div>
         </footer>
-<script>
-(function () {
-    // Create floating button
-    const btn = document.createElement("button");
-    btn.setAttribute("aria-label", "Join Discord Community");
-    btn.innerHTML = `<svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>`;
-    btn.style.cssText = `
-        position:fixed;
-        bottom:20px;
-        right:20px;
-        width:56px;
-        height:56px;
-        border:none;
-        border-radius:50%;
-        background:#5865F2;
-        color:#fff;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        cursor:pointer;
-        box-shadow:0 6px 20px rgba(88,101,242,0.4);
-        z-index:999999;
-        transition: transform 0.2s ease;
-    `;
-    btn.onmouseover = () => btn.style.transform = "scale(1.08)";
-    btn.onmouseout = () => btn.style.transform = "scale(1)";
+    <!-- Discord Floating Widget -->
+    <button id="discord-float-btn" aria-label="Join Discord Community" title="Join GTABrowser Discord Community">
+      <svg viewBox="0 0 127.14 96.36" width="28" height="22" fill="currentColor">
+        <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,45.88,53.89,53C53.89,60,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,45.88,96.12,53C96.12,60,91.08,65.69,84.69,65.69Z"/>
+      </svg>
+    </button>
 
-    // Create widget container
-    const box = document.createElement("div");
-    box.style.cssText = `
-        position:fixed;
-        bottom:85px;
-        right:20px;
-        width:350px;
-        height:500px;
-        display:none;
-        border-radius:12px;
-        overflow:hidden;
-        box-shadow:0 12px 36px rgba(0,0,0,.5);
-        z-index:999999;
-        background:#2b2d31;
-        border:1px solid #383a40;
-    `;
+    <div id="discord-widget-box" role="dialog" aria-label="Discord Community Widget">
+      <div class="discord-widget-header">
+        <div class="discord-widget-header-left">
+          <svg viewBox="0 0 127.14 96.36" width="22" height="17" fill="currentColor">
+            <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,45.88,53.89,53C53.89,60,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,45.88,96.12,53C96.12,60,91.08,65.69,84.69,65.69Z"/>
+          </svg>
+          <span>Discord Server</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <a href="https://discord.gg/" target="_blank" rel="noopener noreferrer" class="discord-join-direct-btn">Join Server ↗</a>
+          <button id="discord-widget-close-btn" class="discord-widget-close-btn" aria-label="Close Discord Widget">✕</button>
+        </div>
+      </div>
+      <div class="discord-widget-iframe-container">
+        <iframe src="https://discord.com/widget?id=1524742491486556260&theme=dark" width="100%" height="100%" frameborder="0" allowtransparency="true" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+      </div>
+    </div>
 
-    // Close button
-    const close = document.createElement("button");
-    close.innerHTML = "✕";
-    close.style.cssText = `
-        position:absolute;
-        top:8px;
-        right:8px;
-        width:28px;
-        height:28px;
-        border:none;
-        border-radius:50%;
-        background:rgba(239,68,68,0.9);
-        color:white;
-        font-weight:bold;
-        cursor:pointer;
-        z-index:2;
-    `;
+    <script>
+      (function() {
+        const btn = document.getElementById("discord-float-btn");
+        const box = document.getElementById("discord-widget-box");
+        const closeBtn = document.getElementById("discord-widget-close-btn");
 
-    // Discord iframe
-    const iframe = document.createElement("iframe");
-    iframe.src = "https://discord.com/widget?id=1524742491486556260&theme=dark";
-    iframe.width = "350";
-    iframe.height = "500";
-    iframe.frameBorder = "0";
-    iframe.allowTransparency = "true";
-    iframe.sandbox = "allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts";
-    iframe.style.border = "0";
+        if (btn && box) {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            box.classList.toggle("active");
+          });
 
-    box.appendChild(close);
-    box.appendChild(iframe);
+          if (closeBtn) {
+            closeBtn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              box.classList.remove("active");
+            });
+          }
 
-    document.body.appendChild(btn);
-    document.body.appendChild(box);
-
-    btn.onclick = () => box.style.display = "block";
-    close.onclick = () => box.style.display = "none";
-})();
-</script>
+          document.addEventListener("click", (e) => {
+            if (box.classList.contains("active") && !box.contains(e.target) && !btn.contains(e.target)) {
+              box.classList.remove("active");
+            }
+          });
+        }
+      })();
+    </script>
 
     <!-- Game canvas -->
     <canvas class="emscripten" id="canvas" aria-hidden="true"></canvas>
